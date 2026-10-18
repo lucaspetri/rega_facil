@@ -1,25 +1,63 @@
 {
   "expo": {
-    "name": "jardim-copiloto",
-    "slug": "jardim-copiloto",
-    "version": "1.0.0",
+    "name": "Rega Fácil",
+    "slug": "rega-facil",
+    "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#b8d4a8"
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lucaspetri.jardimcopiloto"
     },
     "android": {
+      "package": "com.lucaspetri.jardimcopiloto",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#b8d4a8",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "permissions": [
+        "RECEIVE_BOOT_COMPLETED",
+        "SCHEDULE_EXACT_ALARM",
+        "POST_NOTIFICATIONS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-font",
+      "expo-dev-client",
+      [
+        "expo-notifications",
+        {
+          "color": "#3f8f5f"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O app Rega Fácil usa suas fotos para registrar as plantas.",
+          "cameraPermission": "O app Rega Fácil usa a câmera para fotografar suas plantas."
+        }
+      ],
+      "@react-native-community/datetimepicker",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511",
+          "delayAppMeasurementInit": true,
+          "userTrackingUsageDescription": "Este identificador pode ser usado para entregar anúncios relevantes no Rega Fácil."
+        }
+      ]
+    ]
   }
 }
