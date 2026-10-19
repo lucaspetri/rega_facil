@@ -1,28 +1,79 @@
-import { Platform } from 'react-native';
+import { Linking, Platform } from 'react-native';
+import Constants from 'expo-constants';
 
 import { normalizeWaterDays, parseWaterTime } from './care';
 import { DEFAULT_WATER_TIME, type Plant } from './models';
 
-type NotificationsModule = typeof import('expo-notifications');
+/**
+ * Imports profundos — evita o barrel `expo-notifications` que no Expo Go
+ * dispara avisos de "not fully supported" e "remote push unavailable".
+ */
+type LocalNotificationsApi = {
+  setNotificationHandler: (typeof import('expo-notifications/build/NotificationsHandler'))['setNotificationHandler'];
+  getPermissionsAsync: (typeof import('expo-notifications/build/NotificationPermissions'))['getPermissionsAsync'];
+  requestPermissionsAsync: (typeof import('expo-notifications/build/NotificationPermissions'))['requestPermissionsAsync'];
+  setNotificationChannelAsync: (typeof import('expo-notifications/build/setNotificationChannelAsync'))['setNotificationChannelAsync'];
+  scheduleNotificationAsync: (typeof import('expo-notifications/build/scheduleNotificationAsync'))['scheduleNotificationAsync'];
+  cancelAllScheduledNotificationsAsync: (typeof import('expo-notifications/build/cancelAllScheduledNotificationsAsync'))['cancelAllScheduledNotificationsAsync'];
+  AndroidImportance: (typeof import('expo-notifications/build/NotificationChannelManager.types'))['AndroidImportance'];
+  SchedulableTriggerInputTypes: (typeof import('expo-notifications/build/Notifications.types'))['SchedulableTriggerInputTypes'];
+};
 
-let notifications: NotificationsModule | null = null;
+const isExpoGo =
+  Constants.appOwnership === 'expo' ||
+  Constants.executionEnvironment === 'storeClient';
+
+let api: LocalNotificationsApi | null = null;
 let loadError: Error | null = null;
+let androidChannelId: string | null = null;
+let handlerReady = false;
 
-const getNotifications = async (): Promise<NotificationsModule | null> => {
+const loadLocalNotifications = async (): Promise<LocalNotificationsApi | null> => {
   if (loadError) return null;
-  if (notifications) return notifications;
+  if (api) return api;
   try {
-    notifications = await import('expo-notifications');
-    notifications.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: false,
-        shouldShowBanner: true,
-        shouldShowList: true,
-      }),
-    });
-    return notifications;
+    const [
+      handlerMod,
+      permissionsMod,
+      channelMod,
+      scheduleMod,
+      cancelMod,
+      channelTypes,
+      notifTypes,
+    ] = await Promise.all([
+      import('expo-notifications/build/NotificationsHandler'),
+      import('expo-notifications/build/NotificationPermissions'),
+      import('expo-notifications/build/setNotificationChannelAsync'),
+      import('expo-notifications/build/scheduleNotificationAsync'),
+      import('expo-notifications/build/cancelAllScheduledNotificationsAsync'),
+      import('expo-notifications/build/NotificationChannelManager.types'),
+      import('expo-notifications/build/Notifications.types'),
+    ]);
+
+    api = {
+      setNotificationHandler: handlerMod.setNotificationHandler,
+      getPermissionsAsync: permissionsMod.getPermissionsAsync,
+      requestPermissionsAsync: permissionsMod.requestPermissionsAsync,
+      setNotificationChannelAsync: channelMod.setNotificationChannelAsync,
+      scheduleNotificationAsync: scheduleMod.scheduleNotificationAsync,
+      cancelAllScheduledNotificationsAsync: cancelMod.cancelAllScheduledNotificationsAsync,
+      AndroidImportance: channelTypes.AndroidImportance,
+      SchedulableTriggerInputTypes: notifTypes.SchedulableTriggerInputTypes,
+    };
+
+    if (!handlerReady) {
+      api.setNotificationHandler({
+        handleNotification: async () => ({
+          shouldPlaySound: true,
+          shouldSetBadge: false,
+          shouldShowBanner: true,
+          shouldShowList: true,
+        }),
+      });
+      handlerReady = true;
+    }
+
+    return api;
   } catch (error) {
     loadError = error instanceof Error ? error : new Error(String(error));
     console.warn('[notifications] indisponível:', loadError.message);
@@ -31,20 +82,27 @@ const getNotifications = async (): Promise<NotificationsModule | null> => {
 };
 
 export const ensureAndroidChannel = async () => {
-  const Notifications = await getNotifications();
-  if (!Notifications || Platform.OS !== 'android') return;
+  // Expo Go rejeita ExpoNotificationChannelManager — não chamar lá.
+  if (Platform.OS !== 'android' || isExpoGo) return;
+  if (androidChannelId) return;
+
+  const Notifications = await loadLocalNotifications();
+  if (!Notifications) return;
+
   try {
     await Notifications.setNotificationChannelAsync('care', {
       name: 'Cuidados do jardim',
       importance: Notifications.AndroidImportance.DEFAULT,
     });
-  } catch (error) {
-    console.warn('[notifications] canal android falhou', error);
+    androidChannelId = 'care';
+  } catch {
+    androidChannelId = null;
   }
 };
 
+/** Pede permissão de notificação local (como apps comuns). */
 export const requestNotificationPermission = async (): Promise<boolean> => {
-  const Notifications = await getNotifications();
+  const Notifications = await loadLocalNotifications();
   if (!Notifications) return false;
   try {
     await ensureAndroidChannel();
@@ -58,12 +116,29 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
   }
 };
 
+export const openSystemNotificationSettings = async () => {
+  try {
+    if (Platform.OS === 'android') {
+      await Linking.openSettings();
+      return;
+    }
+    await Linking.openURL('app-settings:');
+  } catch (error) {
+    console.warn('[notifications] abrir configurações falhou', error);
+  }
+};
+
+const androidContentExtras = (): { channelId?: string } => {
+  if (Platform.OS !== 'android' || !androidChannelId) return {};
+  return { channelId: androidChannelId };
+};
+
 /** Agenda lembretes semanais de rega + data única de adubo. */
 export const syncPlantWaterNotifications = async (
   enabled: boolean,
   plants: Plant[],
 ): Promise<void> => {
-  const Notifications = await getNotifications();
+  const Notifications = await loadLocalNotifications();
   if (!Notifications) return;
 
   try {
@@ -84,7 +159,7 @@ export const syncPlantWaterNotifications = async (
             body: `Hora de regar · ${waterTime}`,
             sound: true,
             data: { plantId: plant.id, kind: 'water' },
-            ...(Platform.OS === 'android' ? { channelId: 'care' } : {}),
+            ...androidContentExtras(),
           },
           trigger: {
             type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
@@ -105,7 +180,7 @@ export const syncPlantWaterNotifications = async (
             body: fertBody,
             sound: true,
             data: { plantId: plant.id, kind: 'fertilize' },
-            ...(Platform.OS === 'android' ? { channelId: 'care' } : {}),
+            ...androidContentExtras(),
           },
           trigger: {
             type: Notifications.SchedulableTriggerInputTypes.DATE,

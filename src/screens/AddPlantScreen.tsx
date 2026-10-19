@@ -17,7 +17,7 @@ import { DateField } from '../components/DateField';
 import { PlantAvatar } from '../components/PlantAvatar';
 import { TimeField } from '../components/TimeField';
 import { WeekDayPicker } from '../components/WeekDayPicker';
-import { addDays } from '../care';
+import { addDays, formatWaterDays } from '../care';
 import { radii, spacing, type ThemeColors } from '../constants/theme';
 import { useCopilot } from '../context/CopilotContext';
 import { useThemeColors } from '../hooks/useThemeColors';
@@ -38,8 +38,7 @@ export const AddPlantScreen = () => {
   const [speciesId, setSpeciesId] = useState(SPECIES_CATALOG[0]!.id);
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
-  const [notes, setNotes] = useState<string[]>([]);
-  const [draftNote, setDraftNote] = useState('');
+  const [notesText, setNotesText] = useState('');
   const [waterDays, setWaterDays] = useState<Weekday[]>([...DEFAULT_WATER_DAYS]);
   const [waterTime, setWaterTime] = useState(DEFAULT_WATER_TIME);
   const [scheduleFertilize, setScheduleFertilize] = useState(false);
@@ -47,28 +46,21 @@ export const AddPlantScreen = () => {
   const [fertilizeNote, setFertilizeNote] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
 
-  const addNote = () => {
-    const trimmed = draftNote.trim();
-    if (!trimmed) return;
-    setNotes((prev) => [...prev, trimmed]);
-    setDraftNote('');
-  };
+  const waterSummary =
+    waterDays.length === 0
+      ? 'Escolha pelo menos um dia'
+      : `Lembrete: ${formatWaterDays(waterDays)} às ${waterTime || DEFAULT_WATER_TIME}`;
 
-  const removeNote = (index: number) => {
-    setNotes((prev) => prev.filter((_, i) => i !== index));
-  };
+  const canSave = Boolean(name.trim()) && waterDays.length > 0;
 
   const onSave = () => {
-    if (!name.trim()) return;
-    if (waterDays.length === 0) return;
-    const pendingNotes = draftNote.trim()
-      ? [...notes, draftNote.trim()]
-      : notes;
+    if (!canSave) return;
+    const trimmedNotes = notesText.trim();
     const plant = addPlant({
       name,
       speciesId,
       location,
-      notes: pendingNotes,
+      notes: trimmedNotes ? [trimmedNotes] : [],
       waterDays,
       waterTime: waterTime || DEFAULT_WATER_TIME,
       fertilizeDueAt: scheduleFertilize ? fertilizeDueAt : null,
@@ -80,133 +72,158 @@ export const AddPlantScreen = () => {
 
   return (
     <View style={styles.flex}>
-    <ScrollView
-      style={styles.flex}
-      contentContainerStyle={[
-        styles.content,
-        { paddingTop: insets.top + 12, paddingBottom: showBanner ? 24 : insets.bottom + 24 },
-      ]}
-    >
-      {showBanner || navigation.canGoBack() ? (
-        <Pressable onPress={() => navigation.goBack()}>
-          <Text style={styles.back}>← Voltar</Text>
-        </Pressable>
-      ) : null}
-      <Text style={styles.title}>Nova planta</Text>
-
-      <Pressable
-        style={styles.preview}
-        onPress={() => promptPlantImage(setImageUri, Boolean(imageUri))}
+      <ScrollView
+        style={styles.flex}
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: insets.top + 12, paddingBottom: showBanner ? 24 : insets.bottom + 24 },
+        ]}
+        keyboardShouldPersistTaps="handled"
       >
-        <PlantAvatar speciesId={speciesId} imageUri={imageUri} size={120} round />
-        <Text style={styles.photoCta}>
-          {imageUri ? 'Trocar foto' : 'Adicionar foto'}
-        </Text>
-      </Pressable>
-
-      <Text style={styles.label}>Tipo</Text>
-      <View style={styles.grid}>
-        {SPECIES_CATALOG.map((s) => (
-          <Pressable
-            key={s.id}
-            onPress={() => setSpeciesId(s.id)}
-            style={[styles.species, speciesId === s.id && styles.speciesActive]}
-          >
-            <PlantAvatar speciesId={s.id} size={48} />
-            <Text style={styles.speciesLabel}>{s.label}</Text>
+        {showBanner || navigation.canGoBack() ? (
+          <Pressable onPress={() => navigation.goBack()}>
+            <Text style={styles.back}>← Voltar</Text>
           </Pressable>
-        ))}
-      </View>
+        ) : null}
 
-      <Text style={styles.label}>Nome</Text>
-      <TextInput
-        value={name}
-        onChangeText={setName}
-        placeholder="Nome"
-        placeholderTextColor={colors.muted}
-        style={styles.input}
-      />
+        <Text style={styles.title}>Nova planta</Text>
+        <Text style={styles.subtitle}>
+          Cadastre a planta e diga quando quer ser lembrado de regar.
+        </Text>
 
-      <Text style={styles.label}>Local</Text>
-      <TextInput
-        value={location}
-        onChangeText={setLocation}
-        placeholder="Local"
-        placeholderTextColor={colors.muted}
-        style={styles.input}
-      />
+        {/* 1. Identidade */}
+        <View style={styles.card}>
+          <Text style={styles.step}>1 · Sua planta</Text>
 
-      <Text style={styles.section}>Rega</Text>
-      <Text style={styles.label}>Dias</Text>
-      <WeekDayPicker value={waterDays} onChange={setWaterDays} />
-      {waterDays.length === 0 ? (
-        <Text style={styles.warn}>Selecione pelo menos um dia.</Text>
-      ) : null}
-      <TimeField value={waterTime} onChange={setWaterTime} label="Horário" />
+          <Pressable
+            style={styles.preview}
+            onPress={() => promptPlantImage(setImageUri, Boolean(imageUri))}
+          >
+            <PlantAvatar speciesId={speciesId} imageUri={imageUri} size={112} round />
+            <Text style={styles.photoCta}>
+              {imageUri ? 'Trocar foto' : 'Adicionar foto (opcional)'}
+            </Text>
+          </Pressable>
 
-      <View style={styles.toggleRow}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.section}>Agendar adubação</Text>
-        </View>
-        <Switch
-          value={scheduleFertilize}
-          onValueChange={setScheduleFertilize}
-          trackColor={{ false: colors.border, true: colors.leaf }}
-          thumbColor={colors.white}
-        />
-      </View>
+          <Text style={styles.label}>Tipo</Text>
+          <View style={styles.grid}>
+            {SPECIES_CATALOG.map((s) => (
+              <Pressable
+                key={s.id}
+                onPress={() => setSpeciesId(s.id)}
+                style={[styles.species, speciesId === s.id && styles.speciesActive]}
+              >
+                <PlantAvatar speciesId={s.id} size={44} />
+                <Text style={styles.speciesLabel}>{s.label}</Text>
+              </Pressable>
+            ))}
+          </View>
 
-      {scheduleFertilize ? (
-        <View style={{ gap: 10 }}>
-          <DateField
-            value={fertilizeDueAt}
-            onChange={setFertilizeDueAt}
-            label="Data"
-          />
-          <Text style={styles.label}>Adubo</Text>
+          <Text style={styles.label}>Nome *</Text>
           <TextInput
-            value={fertilizeNote}
-            onChangeText={setFertilizeNote}
-            placeholder="Nome do adubo"
+            value={name}
+            onChangeText={setName}
+            placeholder="Ex.: Samambaia da sala"
+            placeholderTextColor={colors.muted}
+            style={styles.input}
+          />
+
+          <Text style={styles.label}>Onde fica (opcional)</Text>
+          <TextInput
+            value={location}
+            onChangeText={setLocation}
+            placeholder="Ex.: Varanda, cozinha…"
             placeholderTextColor={colors.muted}
             style={styles.input}
           />
         </View>
-      ) : null}
 
-      <Text style={styles.section}>Notas</Text>
-      {notes.map((note, index) => (
-        <View key={`${index}-${note.slice(0, 12)}`} style={styles.noteRow}>
-          <Text style={styles.noteText}>{note}</Text>
-          <Pressable onPress={() => removeNote(index)}>
-            <Text style={styles.noteRemove}>Remover</Text>
-          </Pressable>
+        {/* 2. Rega */}
+        <View style={styles.card}>
+          <Text style={styles.step}>2 · Quando regar</Text>
+          <Text style={styles.hint}>
+            Marque os dias da semana e o horário do lembrete no celular.
+          </Text>
+
+          <Text style={styles.label}>Dias da semana *</Text>
+          <WeekDayPicker value={waterDays} onChange={setWaterDays} />
+          {waterDays.length === 0 ? (
+            <Text style={styles.warn}>Selecione pelo menos um dia.</Text>
+          ) : null}
+
+          <TimeField
+            value={waterTime}
+            onChange={setWaterTime}
+            label="Horário do lembrete"
+          />
+
+          <View style={styles.summaryBox}>
+            <Text style={styles.summaryText}>{waterSummary}</Text>
+          </View>
         </View>
-      ))}
-      <TextInput
-        value={draftNote}
-        onChangeText={setDraftNote}
-        placeholder="Escreva uma nota"
-        placeholderTextColor={colors.muted}
-        multiline
-        style={[styles.input, styles.textarea]}
-      />
-      <Pressable
-        style={[styles.secondaryCta, !draftNote.trim() && styles.ctaDisabled]}
-        onPress={addNote}
-        disabled={!draftNote.trim()}
-      >
-        <Text style={styles.secondaryCtaText}>Adicionar</Text>
-      </Pressable>
 
-      <Pressable
-        style={[styles.cta, (!name.trim() || waterDays.length === 0) && styles.ctaDisabled]}
-        onPress={onSave}
-      >
-        <Text style={styles.ctaText}>Salvar planta</Text>
-      </Pressable>
-    </ScrollView>
-    {showBanner ? <BannerAdSlot /> : null}
+        {/* 3. Adubo */}
+        <View style={styles.card}>
+          <View style={styles.toggleRow}>
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text style={styles.step}>3 · Adubo (opcional)</Text>
+              <Text style={styles.hint}>Lembrete único na data que você escolher.</Text>
+            </View>
+            <Switch
+              value={scheduleFertilize}
+              onValueChange={setScheduleFertilize}
+              trackColor={{ false: colors.border, true: colors.leaf }}
+              thumbColor={colors.white}
+            />
+          </View>
+
+          {scheduleFertilize ? (
+            <View style={{ gap: 10, marginTop: 4 }}>
+              <DateField
+                value={fertilizeDueAt}
+                onChange={setFertilizeDueAt}
+                label="Data do lembrete"
+              />
+              <Text style={styles.label}>Qual adubo? (opcional)</Text>
+              <TextInput
+                value={fertilizeNote}
+                onChangeText={setFertilizeNote}
+                placeholder="Ex.: NPK 10-10-10"
+                placeholderTextColor={colors.muted}
+                style={styles.input}
+              />
+            </View>
+          ) : null}
+        </View>
+
+        {/* 4. Notas */}
+        <View style={styles.card}>
+          <Text style={styles.step}>4 · Observações (opcional)</Text>
+          <Text style={styles.hint}>Anotações livres sobre a planta.</Text>
+          <TextInput
+            value={notesText}
+            onChangeText={setNotesText}
+            placeholder="Ex.: gosta de luz indireta…"
+            placeholderTextColor={colors.muted}
+            multiline
+            style={[styles.input, styles.textarea]}
+          />
+        </View>
+
+        <Pressable
+          style={[styles.cta, !canSave && styles.ctaDisabled]}
+          onPress={onSave}
+          disabled={!canSave}
+        >
+          <Text style={styles.ctaText}>Salvar planta</Text>
+        </Pressable>
+        {!name.trim() ? (
+          <Text style={styles.footerHint}>Informe o nome da planta para salvar.</Text>
+        ) : waterDays.length === 0 ? (
+          <Text style={styles.footerHint}>Escolha pelo menos um dia de rega.</Text>
+        ) : null}
+      </ScrollView>
+      {showBanner ? <BannerAdSlot /> : null}
     </View>
   );
 };
@@ -214,30 +231,43 @@ export const AddPlantScreen = () => {
 const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     flex: { flex: 1, backgroundColor: colors.background },
-    content: { paddingHorizontal: spacing.md, gap: 10 },
+    content: { paddingHorizontal: spacing.md, gap: 14 },
     back: { color: colors.leafDeep, fontWeight: '700', marginBottom: 4 },
     title: { fontSize: 26, fontWeight: '700', color: colors.ink },
-    subtitle: { color: colors.muted, fontSize: 15, marginBottom: 8 },
-    preview: {
-      alignItems: 'center',
+    subtitle: { color: colors.muted, fontSize: 15, lineHeight: 21, marginBottom: 4 },
+    card: {
       backgroundColor: colors.panel,
       borderRadius: radii.lg,
-      padding: 16,
       borderWidth: 1,
       borderColor: colors.border,
+      padding: 14,
+      gap: 10,
+    },
+    step: { fontWeight: '800', color: colors.ink, fontSize: 16 },
+    hint: { color: colors.muted, fontSize: 13, lineHeight: 18 },
+    preview: {
+      alignItems: 'center',
+      backgroundColor: colors.panelDeep,
+      borderRadius: radii.md,
+      padding: 14,
       gap: 8,
     },
     photoCta: { fontWeight: '700', color: colors.leafDeep, fontSize: 13 },
-    tip: { color: colors.muted, fontSize: 13, textAlign: 'center' },
-    section: { fontWeight: '800', color: colors.ink, fontSize: 16, marginTop: 8 },
-    label: { fontWeight: '700', color: colors.ink, marginTop: 4, fontSize: 14 },
-    meta: { color: colors.muted, fontSize: 13 },
+    label: { fontWeight: '700', color: colors.ink, fontSize: 14, marginTop: 2 },
     warn: { color: colors.wilted, fontSize: 13, fontWeight: '700' },
+    summaryBox: {
+      backgroundColor: colors.panelDeep,
+      borderRadius: radii.md,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    summaryText: { color: colors.leafDeep, fontWeight: '700', fontSize: 14 },
     toggleRow: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 12,
-      marginTop: 6,
     },
     grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
     species: {
@@ -261,7 +291,7 @@ const createStyles = (colors: ThemeColors) =>
       textAlign: 'center',
     },
     input: {
-      backgroundColor: colors.panel,
+      backgroundColor: colors.background,
       borderRadius: radii.md,
       borderWidth: 1,
       borderColor: colors.border,
@@ -270,31 +300,9 @@ const createStyles = (colors: ThemeColors) =>
       color: colors.ink,
       fontSize: 15,
     },
-    textarea: { minHeight: 72, textAlignVertical: 'top' },
-    noteRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-      backgroundColor: colors.panel,
-      borderRadius: radii.md,
-      borderWidth: 1,
-      borderColor: colors.border,
-      paddingHorizontal: 12,
-      paddingVertical: 10,
-    },
-    noteText: { flex: 1, color: colors.ink, fontSize: 14, lineHeight: 20 },
-    noteRemove: { color: colors.wilted, fontWeight: '700', fontSize: 13 },
-    secondaryCta: {
-      borderRadius: radii.md,
-      borderWidth: 1,
-      borderColor: colors.border,
-      backgroundColor: colors.panel,
-      paddingVertical: 10,
-      alignItems: 'center',
-    },
-    secondaryCtaText: { color: colors.leafDeep, fontWeight: '700', fontSize: 14 },
+    textarea: { minHeight: 80, textAlignVertical: 'top' },
     cta: {
-      marginTop: 8,
+      marginTop: 4,
       backgroundColor: colors.leafDeep,
       borderRadius: radii.md,
       paddingVertical: 14,
@@ -302,4 +310,10 @@ const createStyles = (colors: ThemeColors) =>
     },
     ctaDisabled: { opacity: 0.45 },
     ctaText: { color: colors.white, fontWeight: '700', fontSize: 15 },
+    footerHint: {
+      color: colors.muted,
+      fontSize: 13,
+      textAlign: 'center',
+      marginBottom: 8,
+    },
   });

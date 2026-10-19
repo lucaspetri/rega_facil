@@ -372,9 +372,19 @@ export const PlantDetailScreen = () => {
               </View>
             ) : (
               <View style={{ gap: 12 }}>
-                <Text style={styles.fieldLabel}>Dias</Text>
+                <Text style={styles.infoSub}>
+                  Dias da semana e horário do lembrete no celular.
+                </Text>
+                <Text style={styles.fieldLabel}>Dias da semana</Text>
                 <WeekDayPicker value={editDays} onChange={setEditDays} />
-                <TimeField value={editTime} onChange={setEditTime} label="Horário" />
+                {editDays.length === 0 ? (
+                  <Text style={styles.warn}>Selecione pelo menos um dia.</Text>
+                ) : null}
+                <TimeField
+                  value={editTime}
+                  onChange={setEditTime}
+                  label="Horário do lembrete"
+                />
                 <Pressable
                   style={[styles.cta, editDays.length === 0 && styles.ctaDisabled]}
                   onPress={() => {
@@ -387,7 +397,7 @@ export const PlantDetailScreen = () => {
                     flash('Rega atualizada');
                   }}
                 >
-                  <Text style={styles.ctaText}>Salvar rega</Text>
+                  <Text style={styles.ctaText}>Salvar lembrete de rega</Text>
                 </Pressable>
               </View>
             )}
@@ -430,9 +440,12 @@ export const PlantDetailScreen = () => {
               </View>
             ) : (
               <View style={{ gap: 12 }}>
+                <Text style={styles.infoSub}>
+                  Lembrete único na data escolhida. Desligue para remover a agenda.
+                </Text>
                 <View style={styles.toggleRow}>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.fieldLabel}>Agendar adubação</Text>
+                    <Text style={styles.fieldLabel}>Lembrar de adubar</Text>
                   </View>
                   <Switch
                     value={editFertEnabled}
@@ -452,13 +465,13 @@ export const PlantDetailScreen = () => {
                     <DateField
                       value={editFertDueAt}
                       onChange={setEditFertDueAt}
-                      label="Data"
+                      label="Data do lembrete"
                     />
-                    <Text style={styles.fieldLabel}>Adubo</Text>
+                    <Text style={styles.fieldLabel}>Qual adubo? (opcional)</Text>
                     <TextInput
                       value={editFertNote}
                       onChangeText={setEditFertNote}
-                      placeholder="Nome do adubo"
+                      placeholder="Ex.: NPK 10-10-10"
                       placeholderTextColor={colors.muted}
                       style={styles.input}
                     />
@@ -777,6 +790,7 @@ const createStyles = (colors: ThemeColors) =>
     infoBlock: { gap: 4 },
     infoMain: { fontSize: 15, fontWeight: '700', color: colors.ink },
     infoSub: { fontSize: 13, color: colors.muted, lineHeight: 19 },
+    warn: { color: colors.wilted, fontSize: 13, fontWeight: '700' },
     topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     link: { color: colors.leafDeep, fontWeight: '700', fontSize: 14 },
     ink: { color: colors.ink, fontWeight: '600' },

@@ -21,7 +21,10 @@ import {
   TERMS_OF_USE,
   TERMS_OF_USE_TITLE,
 } from '../legal/documents';
-import { requestNotificationPermission } from '../notifications';
+import {
+  openSystemNotificationSettings,
+  requestNotificationPermission,
+} from '../notifications';
 
 type DocKind = 'privacy' | 'terms' | null;
 
@@ -37,8 +40,17 @@ export const SettingsScreen = () => {
     setNotificationsEnabled(granted);
     if (!granted) {
       Alert.alert(
-        'Permissão negada',
-        'Ative as notificações nas configurações do Android para receber alertas de rega.',
+        'Notificações desativadas',
+        'Para lembrar a rega, permita notificações do Rega Fácil nas configurações do aparelho.',
+        [
+          { text: 'Agora não', style: 'cancel' },
+          {
+            text: 'Abrir configurações',
+            onPress: () => {
+              void openSystemNotificationSettings();
+            },
+          },
+        ],
       );
     }
   };

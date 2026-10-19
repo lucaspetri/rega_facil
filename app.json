@@ -9,7 +9,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#b8d4a8"
+      "backgroundColor": "#c5d9b8"
     },
     "ios": {
       "supportsTablet": true,
@@ -18,7 +18,7 @@
     "android": {
       "package": "com.lucaspetri.jardimcopiloto",
       "adaptiveIcon": {
-        "backgroundColor": "#b8d4a8",
+        "backgroundColor": "#c5d9b8",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -38,6 +38,7 @@
       [
         "expo-notifications",
         {
+          "icon": "./assets/notification-icon.png",
           "color": "#3f8f5f"
         }
       ],

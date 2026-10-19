@@ -56,7 +56,6 @@ export const LegalGateScreen = () => {
     >
       <View style={styles.content}>
         <Text style={styles.brand}>Rega Fácil</Text>
-        <Text style={styles.title}>Olá</Text>
         <Text style={styles.subtitle}>
           Para usar o app, confirme que leu a{' '}
           <Text style={styles.inlineLink} onPress={() => setDoc('privacy')}>
@@ -118,12 +117,11 @@ const createStyles = (colors: ThemeColors) =>
     flex: { flex: 1, backgroundColor: colors.background, justifyContent: 'center' },
     content: { paddingHorizontal: spacing.lg, gap: 16 },
     brand: {
-      fontSize: 13,
+      fontSize: 28,
       fontWeight: '700',
-      color: colors.muted,
-      letterSpacing: 0.3,
+      color: colors.ink,
+      letterSpacing: 0.2,
     },
-    title: { fontSize: 32, fontWeight: '700', color: colors.ink },
     subtitle: { fontSize: 15, color: colors.muted, lineHeight: 22 },
     inlineLink: {
       color: colors.leafDeep,

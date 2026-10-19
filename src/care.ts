@@ -237,13 +237,21 @@ export const formatWaterDueLabel = (alert: CareAlert, now = Date.now()): string 
   return `${prefix} em ${diff} dias`;
 };
 
-export const formatDateTime = (ts: number): string =>
-  new Date(ts).toLocaleString('pt-BR', {
-    day: '2-digit',
-    month: 'short',
+export const formatTimeBr = (ts: number): string =>
+  new Date(ts).toLocaleTimeString('pt-BR', {
     hour: '2-digit',
     minute: '2-digit',
+    hour12: false,
   });
+
+export const formatDateTime = (ts: number): string => {
+  const d = new Date(ts);
+  const date = d.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+  });
+  return `${date}, ${formatTimeBr(ts)}`;
+};
 
 export const createId = (): string =>
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;

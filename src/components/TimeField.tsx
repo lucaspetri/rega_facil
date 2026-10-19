@@ -55,8 +55,11 @@ export const TimeField = ({ value, onChange, label = 'Horário do lembrete' }: P
         <DateTimePicker
           value={dateValue}
           mode="time"
-          is24Hour
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          is24Hour={true}
+          locale="pt-BR"
+          // Evita picker material no formato AM/PM de locale US
+          {...(Platform.OS === 'android' ? { design: 'default' as const } : {})}
+          display={Platform.OS === 'ios' ? 'spinner' : 'spinner'}
           onChange={onPick}
         />
       ) : null}
