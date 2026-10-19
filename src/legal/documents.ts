@@ -1,13 +1,15 @@
 /** Versão das políticas — ao mudar, o usuário precisa aceitar de novo. */
-export const LEGAL_VERSION = '2026-10-18';
+export const LEGAL_VERSION = '2026-10-19';
 
 export const PRIVACY_POLICY_TITLE = 'Política de Privacidade';
 export const TERMS_OF_USE_TITLE = 'Termos de Uso';
 
-/** Atualize com o e-mail real antes de publicar na loja. */
-export const PRIVACY_CONTACT_EMAIL = 'suporte@regafacil.app';
+export const PRIVACY_CONTACT_EMAIL = 'tiparaalguem@gmail.com';
 
-export const PRIVACY_POLICY = `Última atualização: 18 de outubro de 2026
+/** URL pública da política (hospede o HTML em docs/ ou GitHub Pages). */
+export const PRIVACY_POLICY_URL = 'https://lucaspetri.github.io/rega_facil/privacy.html';
+
+export const PRIVACY_POLICY = `Última atualização: 19 de outubro de 2026
 
 1. Quem somos
 O aplicativo Rega Fácil (“App”) é um assistente de cuidados com plantas que funciona principalmente no seu aparelho. Esta Política explica quais dados são tratados, para quê e com quem, em conformidade com a Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018) e com as regras das lojas de aplicativos.
@@ -73,7 +75,7 @@ Podemos atualizar esta Política. A versão vigente é identificada pela data e 
 
 Ao continuar e aceitar no App, você declara ter lido esta Política de Privacidade.`;
 
-export const TERMS_OF_USE = `Última atualização: 18 de outubro de 2026
+export const TERMS_OF_USE = `Última atualização: 19 de outubro de 2026
 
 1. Aceite
 Ao usar o Rega Fácil (“App”), você concorda com estes Termos e com a Política de Privacidade. Se não concordar, não utilize o App.

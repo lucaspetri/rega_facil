@@ -12,7 +12,7 @@ export const ADMOB_TEST_BANNER_IOS = 'ca-app-pub-3940256099942544/2934735716';
 
 /**
  * Só banners ancorados na base — sem intersticial / app-open / rewarded.
- * Produção: defina IDs reais e publique política de privacidade com URL pública.
+ * Produção: defina IDs reais. Política pública: PRIVACY_POLICY_URL em legal/documents.ts.
  */
 export const ADS_BANNER_ONLY = true as const;
 
