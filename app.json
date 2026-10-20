@@ -55,7 +55,7 @@
       [
         "react-native-google-mobile-ads",
         {
-          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "androidAppId": "ca-app-pub-2966997269072637~3979078264",
           "iosAppId": "ca-app-pub-3940256099942544~1458002511",
           "delayAppMeasurementInit": true,
           "userTrackingUsageDescription": "Este identificador pode ser usado para entregar anúncios relevantes no Rega Fácil."

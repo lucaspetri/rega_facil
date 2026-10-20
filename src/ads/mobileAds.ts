@@ -2,9 +2,11 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
 import {
+  ADMOB_BANNER_ANDROID,
   ADMOB_TEST_BANNER_ANDROID,
   ADMOB_TEST_BANNER_IOS,
   ADS_ENABLED,
+  USE_PRODUCTION_ADS,
 } from './config';
 
 type AdsModule = typeof import('react-native-google-mobile-ads');
@@ -26,6 +28,7 @@ export const isAdsNativeAvailable = (): boolean =>
   canUseNativeAds() && adsModule != null && !loadError;
 
 export const getBannerUnitId = (mod?: AdsModule | null): string => {
+  if (USE_PRODUCTION_ADS && Platform.OS === 'android') return ADMOB_BANNER_ANDROID;
   if (mod?.TestIds?.BANNER) return mod.TestIds.BANNER;
   return Platform.OS === 'ios' ? ADMOB_TEST_BANNER_IOS : ADMOB_TEST_BANNER_ANDROID;
 };
