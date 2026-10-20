@@ -13,10 +13,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.lucaspetri.jardimcopiloto"
+      "bundleIdentifier": "com.lucaspetri.regafacil"
     },
     "android": {
-      "package": "com.lucaspetri.jardimcopiloto",
+      "package": "com.lucaspetri.regafacil",
       "versionCode": 1,
       "allowBackup": true,
       "adaptiveIcon": {

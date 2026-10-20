@@ -18,3 +18,9 @@ export const ADS_BANNER_ONLY = true as const;
 
 /** Sem personalização até haver formulário de consentimento (UMP) — mais seguro na LGPD. */
 export const ADS_NON_PERSONALIZED_ONLY = true as const;
+
+/**
+ * APK de teste (perfil preview) define EXPO_PUBLIC_ADS_ENABLED=0.
+ * Assim o build não inclui nem inicializa o AdMob.
+ */
+export const ADS_ENABLED = process.env.EXPO_PUBLIC_ADS_ENABLED !== '0';

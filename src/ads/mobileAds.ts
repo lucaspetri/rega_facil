@@ -4,6 +4,7 @@ import Constants from 'expo-constants';
 import {
   ADMOB_TEST_BANNER_ANDROID,
   ADMOB_TEST_BANNER_IOS,
+  ADS_ENABLED,
 } from './config';
 
 type AdsModule = typeof import('react-native-google-mobile-ads');
@@ -14,6 +15,7 @@ let initialized = false;
 
 /** Expo Go não tem o módulo nativo — nunca importar o pacote lá (quebra o app). */
 export const canUseNativeAds = (): boolean => {
+  if (!ADS_ENABLED) return false;
   if (Platform.OS === 'web') return false;
   // appOwnership === 'expo' → Expo Go
   if (Constants.appOwnership === 'expo') return false;

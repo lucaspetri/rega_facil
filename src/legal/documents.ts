@@ -13,7 +13,7 @@ export const PRIVACY_POLICY = `Versão legal: ${LEGAL_VERSION}
 Última atualização: 20 de outubro de 2026
 
 1. Quem é o responsável pelos seus dados
-1.1. O aplicativo Rega Fácil (“App”) é mantido pelo desenvolvedor identificado na ficha do App nas lojas digitais (“nós”).
+1.1. O aplicativo Rega Fácil (“App”) é mantido por LpetriP (“nós”), o mesmo nome que aparece como desenvolvedor na ficha do App nas lojas digitais.
 1.2. Para os fins da Lei Geral de Proteção de Dados (Lei nº 13.709/2018, “LGPD”), somos o controlador dos dados pessoais descritos nesta Política que estejam sob nosso controle.
 1.3. Canal de privacidade: ${PRIVACY_CONTACT_EMAIL}. Este é o canal oficial para qualquer pedido sobre seus dados. Como agente de tratamento de pequeno porte, não indicamos encarregado (DPO), conforme permite a Resolução CD/ANPD nº 2/2022, e mantemos este canal para atender você e a Autoridade Nacional de Proteção de Dados (ANPD).
 1.4. Esta Política vale para o App e para a página ${PRIVACY_POLICY_URL}.
@@ -96,7 +96,7 @@ export const TERMS_OF_USE = `Versão legal: ${LEGAL_VERSION}
 Última atualização: 20 de outubro de 2026
 
 1. Quem somos e o que é este documento
-1.1. Estes Termos regulam o uso do aplicativo Rega Fácil (“App”), mantido pelo desenvolvedor identificado na ficha do App nas lojas digitais (“nós”). Contato: ${PRIVACY_CONTACT_EMAIL}.
+1.1. Estes Termos regulam o uso do aplicativo Rega Fácil (“App”), mantido por LpetriP (“nós”), o mesmo nome que aparece como desenvolvedor na ficha do App nas lojas digitais. Contato: ${PRIVACY_CONTACT_EMAIL}.
 1.2. Estes Termos funcionam em conjunto com a Política de Privacidade, que explica como os dados são tratados.
 
 2. Aceite
