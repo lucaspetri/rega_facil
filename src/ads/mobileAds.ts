@@ -58,6 +58,13 @@ export const initializeMobileAds = async (): Promise<boolean> => {
       loadError = new Error('SDK de ads inválido');
       return false;
     }
+    if (typeof api.setRequestConfiguration === 'function') {
+      await api.setRequestConfiguration({
+        maxAdContentRating: mod.MaxAdContentRating.G,
+        tagForChildDirectedTreatment: false,
+        tagForUnderAgeOfConsent: false,
+      });
+    }
     await api.initialize();
     initialized = true;
     return true;
