@@ -43,9 +43,19 @@ export interface Plant {
 
 export type HomeLayout = 'grid' | 'list';
 
+/** Plantinha fixa da casa. Não entra na lista de plantas cadastradas. */
+export interface Companion {
+  lastWateredAt: number | null;
+}
+
+export const COMPANION_NAME = 'Broto';
+
+export const defaultCompanion = (): Companion => ({ lastWateredAt: null });
+
 export interface CopilotState {
   version: 2;
   plants: Plant[];
+  companion: Companion;
   logs: CareLog[];
   notificationsEnabled: boolean;
   onboarded: boolean;

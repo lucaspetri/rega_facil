@@ -4,6 +4,8 @@ import { addDays, createId, migratePlant } from './care';
 import {
   DEFAULT_WATER_DAYS,
   DEFAULT_WATER_TIME,
+  defaultCompanion,
+  type Companion,
   type CopilotState,
   type HomeLayout,
   type Plant,
@@ -50,9 +52,16 @@ const demoPlants = (): Plant[] => {
   ];
 };
 
+const parseCompanion = (value: unknown): Companion => {
+  if (!value || typeof value !== 'object') return defaultCompanion();
+  const lastWateredAt = (value as Companion).lastWateredAt;
+  return { lastWateredAt: typeof lastWateredAt === 'number' ? lastWateredAt : null };
+};
+
 export const createInitialState = (): CopilotState => ({
   version: 2,
   plants: demoPlants(),
+  companion: defaultCompanion(),
   logs: [],
   notificationsEnabled: true,
   onboarded: false,
@@ -82,6 +91,7 @@ export const loadState = async (): Promise<CopilotState> => {
     return {
       version: 2,
       plants: parsed.plants.map((p) => migratePlant(p as unknown as Record<string, unknown>)),
+      companion: parseCompanion(parsed.companion),
       logs: Array.isArray(parsed.logs) ? parsed.logs : [],
       // Novos usuários: alertas ligados. Quem já tinha estado sem o campo legal ainda:
       // se notificationsEnabled estava salvo, respeita; senão default true.

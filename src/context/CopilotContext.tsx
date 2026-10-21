@@ -13,6 +13,7 @@ import {
   DEFAULT_WATER_TIME,
   type CareActionType,
   type CareLog,
+  type Companion,
   type CopilotState,
   type HomeLayout,
   type Plant,
@@ -44,6 +45,7 @@ type CopilotContextValue = {
   updatePlant: (id: string, patch: Partial<Plant>) => void;
   removePlant: (id: string) => void;
   logCare: (plantId: string, type: CareActionType, note?: string) => void;
+  waterCompanion: () => Companion;
   setNotificationsEnabled: (enabled: boolean) => void;
   setDarkMode: (enabled: boolean) => void;
   setHomeLayout: (layout: HomeLayout) => void;
@@ -168,6 +170,12 @@ export const CopilotProvider = ({ children }: { children: ReactNode }) => {
     }));
   }, []);
 
+  const waterCompanion = useCallback((): Companion => {
+    const companion = { lastWateredAt: Date.now() };
+    setState((prev) => ({ ...prev, companion }));
+    return companion;
+  }, []);
+
   const setNotificationsEnabled = useCallback((enabled: boolean) => {
     setState((prev) => ({ ...prev, notificationsEnabled: enabled }));
     if (!enabled) {
@@ -213,6 +221,7 @@ export const CopilotProvider = ({ children }: { children: ReactNode }) => {
       updatePlant,
       removePlant,
       logCare,
+      waterCompanion,
       setNotificationsEnabled,
       setDarkMode,
       setHomeLayout,
@@ -230,6 +239,7 @@ export const CopilotProvider = ({ children }: { children: ReactNode }) => {
       updatePlant,
       removePlant,
       logCare,
+      waterCompanion,
       setNotificationsEnabled,
       setDarkMode,
       setHomeLayout,
