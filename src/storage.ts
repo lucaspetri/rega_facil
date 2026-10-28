@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { addDays, createId, migratePlant } from './care';
+import { migratePlant } from './care';
 import {
   DEFAULT_WATER_DAYS,
   DEFAULT_WATER_TIME,
@@ -12,47 +12,9 @@ import {
 const STORAGE_KEY = 'jardim-copiloto-v2';
 const LEGACY_KEY = 'jardim-copiloto-v1';
 
-const demoPlants = (): Plant[] => {
-  const now = Date.now();
-  const day = 24 * 60 * 60 * 1000;
-
-  return [
-    {
-      id: createId(),
-      name: 'Luna',
-      speciesId: 'samambaia',
-      location: 'Sala',
-      notes: ['Perto da janela leste.', 'Gosta de umidade no ar.'],
-      waterDays: [1, 3, 5],
-      waterTime: '09:00',
-      fertilizeDueAt: addDays(now, 40),
-      fertilizeNote: 'NPK 10-10-10',
-      imageUri: null,
-      lastWateredAt: now - 2 * day,
-      lastFertilizedAt: now - 20 * day,
-      createdAt: now - 40 * day,
-    },
-    {
-      id: createId(),
-      name: 'Spike',
-      speciesId: 'cacto',
-      location: 'Varanda',
-      notes: ['Sol da manhã.'],
-      waterDays: [0],
-      waterTime: '10:00',
-      fertilizeDueAt: null,
-      fertilizeNote: '',
-      imageUri: null,
-      lastWateredAt: now - 5 * day,
-      lastFertilizedAt: null,
-      createdAt: now - 90 * day,
-    },
-  ];
-};
-
 export const createInitialState = (): CopilotState => ({
   version: 2,
-  plants: demoPlants(),
+  plants: [],
   logs: [],
   notificationsEnabled: true,
   onboarded: false,

@@ -8,7 +8,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { CommonActions, useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -67,7 +67,34 @@ export const AddPlantScreen = () => {
       fertilizeNote: scheduleFertilize ? fertilizeNote : '',
       imageUri,
     });
-    navigation.navigate('PlantDetail', { plantId: plant.id });
+    setSpeciesId(SPECIES_CATALOG[0]!.id);
+    setName('');
+    setLocation('');
+    setNotesText('');
+    setWaterDays([...DEFAULT_WATER_DAYS]);
+    setWaterTime(DEFAULT_WATER_TIME);
+    setScheduleFertilize(false);
+    setFertilizeDueAt(addDays(Date.now(), 30));
+    setFertilizeNote('');
+    setImageUri(null);
+    const openPlant = CommonActions.reset({
+      index: 1,
+      routes: [
+        {
+          name: 'Tabs',
+          state: {
+            index: 0,
+            routes: [{ name: 'Home' }, { name: 'AddPlantTab' }, { name: 'Settings' }],
+          },
+        },
+        { name: 'PlantDetail', params: { plantId: plant.id } },
+      ],
+    });
+    if (route.name === 'AddPlantTab') {
+      navigation.getParent()?.dispatch(openPlant);
+      return;
+    }
+    navigation.dispatch(openPlant);
   };
 
   return (
