@@ -22,7 +22,7 @@ import type { RootStackParamList } from '../navigation/types';
 export const HomeScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { state, logCare, setHomeLayout, waterCompanion } = useCopilot();
+  const { state, logCare, setHomeLayout } = useCopilot();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [toast, setToast] = useState<string | null>(null);
@@ -38,31 +38,19 @@ export const HomeScreen = () => {
     flash(`${name} regada`);
   };
 
-  const companionWatered = wasDoneToday(state.companion.lastWateredAt);
-
-  const waterBuddy = () => {
-    if (companionWatered) {
-      flash(`${COMPANION_NAME} já foi regada hoje`);
-      return;
-    }
-    waterCompanion();
-    flash(`${COMPANION_NAME} regada`);
-  };
-
   const waterAll = () => {
+    if (state.plants.length === 0) return;
     const pending = state.plants.filter((p) => !wasDoneToday(p.lastWateredAt));
-    if (pending.length === 0 && companionWatered) {
+    if (pending.length === 0) {
       flash('Todas já regadas hoje');
       return;
     }
     pending.forEach((p) => logCare(p.id, 'water'));
-    if (!companionWatered) waterCompanion();
-    const count = pending.length + (companionWatered ? 0 : 1);
-    flash(`Regadas (${count})`);
+    flash(`Regadas (${pending.length})`);
   };
 
   const allWateredToday =
-    companionWatered && state.plants.every((p) => wasDoneToday(p.lastWateredAt));
+    state.plants.length > 0 && state.plants.every((p) => wasDoneToday(p.lastWateredAt));
 
   const urgencyTone = (urgency: CareUrgency) => {
     switch (urgency) {
@@ -165,7 +153,11 @@ export const HomeScreen = () => {
     <View style={[styles.flex, { paddingTop: insets.top + 10 }]}>
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 120 }]}>
         <View style={styles.toolbar}>
-          <Pressable style={styles.waterAllBtn} onPress={waterAll}>
+          <Pressable
+            style={[styles.waterAllBtn, state.plants.length === 0 && styles.btnDisabled]}
+            onPress={waterAll}
+            disabled={state.plants.length === 0}
+          >
             <MaterialCommunityIcons name="water" size={16} color={colors.waterDeep} />
             <Text style={styles.waterAllText}>
               {allWateredToday ? 'Todas regadas' : 'Regar todas'}
@@ -190,34 +182,9 @@ export const HomeScreen = () => {
           </View>
         </View>
 
-        <View style={styles.buddy}>
-          <View style={styles.buddyMain}>
-            <PlantAvatar speciesId="broto" size={72} />
-            <View style={styles.buddyText}>
-              <Text style={styles.buddyName}>{COMPANION_NAME}</Text>
-              <Text style={styles.buddyHint}>A plantinha da casa</Text>
-              <Text
-                style={[
-                  styles.buddyDue,
-                  { color: companionWatered ? colors.leafDeep : colors.waterDeep },
-                ]}
-              >
-                {companionWatered ? 'Regada hoje' : 'Quer água'}
-              </Text>
-            </View>
-          </View>
-          <Pressable
-            style={[styles.buddyBtn, companionWatered && styles.waterBtnDone]}
-            onPress={waterBuddy}
-          >
-            <MaterialCommunityIcons name="watering-can" size={18} color={colors.white} />
-            <Text style={styles.waterBtnText}>{companionWatered ? 'Reguei' : 'Regar'}</Text>
-          </Pressable>
-        </View>
-
         {state.plants.length === 0 ? (
           <View style={styles.empty}>
-            <Text style={styles.emptyTitle}>Nenhuma planta cadastrada</Text>
+            <Text style={styles.emptyTitle}>Nenhuma planta</Text>
             <Text style={styles.meta}>Toque em + para começar</Text>
           </View>
         ) : isGrid ? (
@@ -227,8 +194,25 @@ export const HomeScreen = () => {
         )}
       </ScrollView>
 
+      <Pressable
+        style={styles.buddy}
+        onPress={() => navigation.navigate('Companion')}
+        accessibilityLabel={COMPANION_NAME}
+      >
+        <View
+          style={[
+            styles.buddySquare,
+            {
+              backgroundColor: wasDoneToday(state.companion.lastWateredAt)
+                ? colors.leafDeep
+                : colors.waterDeep,
+            },
+          ]}
+        />
+      </Pressable>
+
       {toast ? (
-        <View style={[styles.toast, { bottom: insets.bottom + 72 }]}>
+        <View style={[styles.toast, { bottom: 96 }]}>
           <Text style={styles.toastText}>{toast}</Text>
         </View>
       ) : null}
@@ -270,38 +254,21 @@ const createStyles = (colors: ThemeColors) =>
       fontWeight: '700',
       fontSize: 13,
     },
+    btnDisabled: { opacity: 0.4 },
     buddy: {
-      flexDirection: 'row',
-      alignItems: 'stretch',
-      backgroundColor: colors.panel,
-      borderRadius: 22,
-      overflow: 'hidden',
+      position: 'absolute',
+      left: 18,
+      bottom: 16,
       shadowColor: '#000',
-      shadowOpacity: 0.06,
-      shadowRadius: 12,
-      shadowOffset: { width: 0, height: 4 },
-      elevation: 3,
+      shadowOpacity: 0.16,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 6,
     },
-    buddyMain: {
-      flex: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-      paddingVertical: 12,
-      paddingLeft: 12,
-      paddingRight: 10,
-    },
-    buddyText: { flex: 1, gap: 2 },
-    buddyName: { fontSize: 17, fontWeight: '800', color: colors.ink },
-    buddyHint: { fontSize: 12, fontWeight: '600', color: colors.muted },
-    buddyDue: { fontSize: 13, fontWeight: '700' },
-    buddyBtn: {
-      alignSelf: 'stretch',
-      justifyContent: 'center',
-      alignItems: 'center',
-      gap: 4,
-      backgroundColor: colors.waterDeep,
-      paddingHorizontal: 16,
+    buddySquare: {
+      width: 64,
+      height: 64,
+      borderRadius: 8,
     },
     iconBtn: {
       width: 40,

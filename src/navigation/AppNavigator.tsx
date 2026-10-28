@@ -14,6 +14,7 @@ import { BannerAdSlot } from '../components/BannerAdSlot';
 import { useCopilot } from '../context/CopilotContext';
 import { useThemeColors } from '../hooks/useThemeColors';
 import { AddPlantScreen } from '../screens/AddPlantScreen';
+import { CompanionScreen } from '../screens/CompanionScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { PlantDetailScreen } from '../screens/PlantDetailScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
@@ -93,6 +94,7 @@ export const AppNavigator = () => {
         <Stack.Screen name="Tabs" component={MainTabs} />
         <Stack.Screen name="PlantDetail" component={PlantDetailScreen} />
         <Stack.Screen name="AddPlant" component={AddPlantScreen} />
+        <Stack.Screen name="Companion" component={CompanionScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

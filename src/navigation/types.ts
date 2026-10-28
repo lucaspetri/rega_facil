@@ -8,4 +8,5 @@ export type RootStackParamList = {
   Tabs: undefined;
   PlantDetail: { plantId: string };
   AddPlant: undefined;
+  Companion: undefined;
 };
